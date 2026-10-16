@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Piano Grid",
+    "slug": "piano-grid-mobile",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "splash": { "backgroundColor": "#090B0F" },
+    "ios": { "supportsTablet": true },
+    "android": { "package": "com.aaronsamuvel.pianogrid", "adaptiveIcon": { "backgroundColor": "#090B0F" } }
+  }
+}

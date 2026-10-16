@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out mobile app
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build APK with EAS
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli build --platform android --profile preview --non-interactive --wait
+
+      - name: Download completed APK
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        shell: bash
+        run: |
+          BUILD_ID="$(npx --yes eas-cli build:list --platform android --limit 1 --json --non-interactive | jq -r '.[0].id')"
+          test -n "$BUILD_ID" && test "$BUILD_ID" != "null"
+          npx --yes eas-cli build:download --build-id "$BUILD_ID" --path Piano-Grid.apk --non-interactive
+
+      - name: Publish APK as a GitHub Release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-v${{ github.run_number }}
+          name: Piano Grid mobile build ${{ github.run_number }}
+          generate_release_notes: true
+          files: Piano-Grid.apk
